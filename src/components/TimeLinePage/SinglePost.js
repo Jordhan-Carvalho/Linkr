@@ -2,18 +2,28 @@ import React, { useState, useContext } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { IoIosHeartEmpty, IoIosHeart } from "react-icons/io";
+import { AiFillDelete } from "react-icons/ai";
+import { VscEdit } from "react-icons/vsc";
 import ReactTooltip from "react-tooltip";
 import axios from "axios";
 
 import replaceHashOnText from "../../utils/hashtagParser";
 import parseTooltipText from "../../utils/parseTooltipText";
 import UserContext from "../../contexts/UserContext";
+import Modal from "./Modal";
+import EditPost from "./EditPost";
+import LinkPreview from "./LinkPreview";
+import Location from "./Location";
 
-export default function SinglePost({ post }) {
+export default function SinglePost({ post, refresh, setRefresh }) {
   const { user, token } = useContext(UserContext);
   const initialState = post.likes.some((like) => like.userId === user.id);
   const [isLiked, setIsLiked] = useState(initialState);
   const [likedArray, setLikedArray] = useState(post.likes);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [postText, setPostText] = useState(post.text);
 
   const likePost = async () => {
     if (!isLiked) {
@@ -49,6 +59,27 @@ export default function SinglePost({ post }) {
     }
   };
 
+  const handleDelete = async () => {
+    console.log("handle delete chamada");
+    setIsLoading(true);
+    try {
+      await axios.delete(
+        `https://mock-api.bootcamp.respondeai.com.br/api/v1/linkr/posts/${post.id}`,
+        { headers: { "user-token": token } }
+      );
+      setIsLoading(false);
+      setIsModalOpen(!isModalOpen);
+      setRefresh(!refresh);
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+      setIsModalOpen(!isModalOpen);
+      alert("Ocorreu um erro, não foi possível excluir o post");
+    }
+  };
+
+  const isOwner = post.user.id === user.id;
+
   return (
     <PostContainer>
       <UserInfoContainer>
@@ -74,18 +105,42 @@ export default function SinglePost({ post }) {
         )}
       </UserInfoContainer>
       <PostContentContainer>
-        <h3>{post.user.username}</h3>
-        <p>{replaceHashOnText(post)}</p>
-        <PreviewContainer>
-          <PreviewInfoContainer>
-            <h3>{post.linkTitle}</h3>
-            <p>{post.linkDescription}</p>
-            <a href={post.link} target="_blank" rel="noreferrer">
-              {post.link}
-            </a>
-          </PreviewInfoContainer>
-          <img src={post.linkImage} alt="link preview" />
-        </PreviewContainer>
+        <SinglePostHeader>
+          <TitleContainer>
+            <h3>{post.user.username}</h3>
+            {post.geolocation && (
+              <Location
+                userName={post.user.username}
+                geolocation={post.geolocation}
+              />
+            )}
+          </TitleContainer>
+          {isOwner && (
+            <span>
+              <EditIcon onClick={() => setIsEdit(!isEdit)} />
+              <DeleteIcon onClick={() => setIsModalOpen(!isModalOpen)} />
+            </span>
+          )}
+          <Modal
+            isModalOpen={isModalOpen}
+            setIsModalOpen={setIsModalOpen}
+            handleDelete={handleDelete}
+            isLoading={isLoading}
+          />
+        </SinglePostHeader>
+        {isEdit ? (
+          <EditPost
+            isEdit={isEdit}
+            text={postText}
+            setPostText={setPostText}
+            setIsEdit={setIsEdit}
+            postId={post.id}
+            userToken={token}
+          />
+        ) : (
+          <p>{replaceHashOnText(postText)}</p>
+        )}
+        <LinkPreview post={post} />
       </PostContentContainer>
     </PostContainer>
   );
@@ -112,7 +167,7 @@ const PostContentContainer = styled.div`
   width: 85%;
   font-family: var(--fontLato);
   word-break: break-all;
-
+  overflow: hidden;
   h3 {
     font-size: 19px;
     color: white;
@@ -158,52 +213,32 @@ const ProfilePicture = styled.img`
   width: 50px;
   border-radius: 50%;
   margin-bottom: 20px;
+  object-fit: cover;
   @media (max-width: 768px) {
     height: 40px;
     width: 40px;
   }
 `;
 
-const PreviewContainer = styled.div`
-  width: 100%;
-  margin-top: 20px;
-  border: 1px solid #4d4d4d;
-  border-radius: 16px;
-  height: 155px;
+const SinglePostHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  overflow: hidden;
-  img {
-    display: block;
-    width: 30%;
-    height: 100%;
-    object-fit: cover;
-  }
 `;
 
-const PreviewInfoContainer = styled.div`
-  padding: 20px;
-  width: 68%;
-  h3 {
-    font-size: 16px;
-    @media (max-width: 768px) {
-      font-size: 11px;
-    }
-  }
-  p {
-    font-size: 11px;
-    @media (max-width: 768px) {
-      font-size: 9px;
-    }
-  }
-  a {
-    display: inline-block;
-    margin-top: 20px;
-    font-size: 11px;
-    color: #cecece;
-    @media (max-width: 768px) {
-      font-size: 9px;
-    }
-  }
+const DeleteIcon = styled(AiFillDelete)`
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+`;
+
+const EditIcon = styled(VscEdit)`
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 8px;
+`;
+
+const TitleContainer = styled.div`
+  display: flex;
 `;

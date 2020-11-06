@@ -6,8 +6,8 @@
   - [x] Para isso, crie um repositório público no seu GitHub e compartilhe acesso com sua dupla
   - [x] **A cada requisito implementado** faça um commit com uma mensagem descritiva do que você evoluiu. Caso queira dividir um requisito em vários commits, não há problema. Mas evite colocar mais de um requisito no mesmo commit
 - Layout
-  - [-] Aplicar layout para desktop, seguindo imagens fornecidas
-  - [-] Aplicar layout para mobile, seguindo imagens fornecidas
+  - [x] Aplicar layout para desktop, seguindo imagens fornecidas
+  - [x] Aplicar layout para mobile, seguindo imagens fornecidas
   - [x] Fontes e cores devem ser extraídas do Figma: [https://www.figma.com/file/PzDjhf1EyeZ0opdDnhLmwJ/linkr?node-id=0%3A1](https://www.figma.com/file/PzDjhf1EyeZ0opdDnhLmwJ/linkr?node-id=0%3A1) (crie uma conta no Figma e se logue para ter acesso ao Inspect)
   - [x] Tamanhos/posicionamento podem ser aproximados, não é necessário copiar o Figma (não recomendado!)
   - [x] Para ícones, utilize a biblioteca **react-icons**
@@ -73,7 +73,7 @@
     - [x] Os posts carregados devem ser obtidos das rotas da API correspondentes
 
 - Deploy
-  - [ ] Coloque seu projeto no ar usando o GitHub Pages
+  - [x] Coloque seu projeto no ar usando o GitHub Pages
 
 # Bônus (opcional)
 
@@ -101,6 +101,97 @@
   - [x] Adicione uma animação de transição ao trocar de páginas (por exemplo, uma página sumir ao mesmo tempo que a próxima aparece)
 
     Dica: pesquise por uma biblioteca chamada **react-transition-group** e como utilizá-la em conjunto com o react-router
+
+## SEMANA 2
+
+- Apagar post
+
+  - [x] Adicionar um botão de "lixeira" (remover) nos posts em que o usuário logado seja o autor, seguindo layout
+  - [x] Ao clicar, deve-se abrir uma modal (também chamada de dialog), confirmando que o usuário gostaria de deletar o post, seguindo layout.
+
+    **Dica**: pesquisa pela biblioteca **react-modal**
+
+  - [x] Caso afirmativo, deve-se enviar um request para o servidor pedindo o delete, exibindo uma mensagem de loading e desabilitando os botões do modal enquanto o servidor não responde
+
+    **Dica**: pesquise pela função **axios.delete**
+
+  - [x] Ao retornar, em caso de sucesso a modal deve ser fechada e a lista de posts recarregada
+  - [x] Em caso de erro, deve-se fechar a modal e exibir um alerta pro usuário de que não foi possível excluir o post
+
+- Editar post
+
+  - [x] Adicionar um botão de "lápis" (editar) nos posts em que o usuário logado seja o autor, seguindo layout
+  - [x] Ao clicar, o texto do post deve se tornar um campo editável seguindo layout e o cursor deve ser colocado automaticamente no campo
+
+    **Dica**: pesquise por "**focus useRef**" e descubra como fazer esse foco com React
+
+  - [x] Ao clicar novamente no botão, ou pressionar Esc dentro do campo, as alterações devem ser descartadas e o texto do post deve voltar a ser um parágrafo normal em vez de campo
+  - [x] Ao dar enter dentro desse campo, deve-se enviar um update pro servidor e campo deve ficar disabled enquanto a requisição não volta
+
+    **Dica**: pesquise por **axios.put**
+
+  - [x] Em caso de sucesso, o campo deve voltar a ser um parágrafo normal, com o texto atualizado
+  - [x] Em caso de erro, o usuário deve ser alertado que não foi possível salvar as alterações e o campo deve voltar a ficar enabled pra edição, ainda contendo o último texto digitado pelo usuário
+
+- Follow / Unfollow
+
+  - [x] Ao entrar na página de perfil de uma pessoa (que não seja o próprio usuário logado), deve existir agora um botão "Follow" / "Unfollow"
+  - [x] Ao clicar nesse botão, deve-se enviar uma requisição pro servidor, para seguir/desseguir a pessoa
+  - [x] Enquanto a requisição não volta, o botão deve ficar desabilitado
+  - [x] Em caso de sucesso, o botão deve alternar de Follow para Unfollow e vice-versa
+  - [x] Em caso de falha, deve-se exibir um alerta pro usuário indicando que não foi possível executar a operação
+  - [x] Para saber inicialmente se o usuário já segue ou não uma pessoa, você pode pegar a lista de usuários seguidos através da API. O botão de Follow/Unfollow deve iniciar no estado correspondente.
+
+- Busca de perfis
+
+  - [x] Agora no topo do site deve ser exibida uma caixa de busca, seguindo layout
+  - [x] A cada letra digitada na busca, deve ser disparada uma busca no servidor e os resultados devem ser exibidos conforme layout
+  - [x] A busca só deve ser disparada quando o usuário digitou pelo menos 3 caracteres e esperando o usuário ficar sem digitar por pelo menos 300ms.
+
+    **Dica**: essa técnica se chama debounce, tem uma lib que pode te ajudar: **react-debounce-input**
+
+  - [ ] Ao exibir os resultados, deve-se mostrar no topo os usuários que você já segue, com a indicação de "following" seguindo layout. Esse tratamento deve ser feito no front, o servidor não responderá de forma ordenada
+  - [x] Ao clicar em um resultado, deve-se redirecionar o usuário para a página de perfil daquele usuário
+
+- Nova timeline
+
+  - [x] Na página de timeline (rota "/timeline"), agora devem aparecer somente os posts das pessoas que você segue e não mais todo mundo. Utilize a nova rota na API para esse fim.
+  - [x] Caso o usuário não siga ninguém ainda, deve aparecer no lugar dos posts uma mensagem dizendo "Você não segue ninguém ainda, procure por perfis na busca"
+  - [x] Caso o usuário já siga pessoas, mas elas não tenham postado nada, deve aparecer no lugar dos posts uma mensagem dizendo "Nenhuma publicação encontrada"
+  - [x] Agora, na página de timeline, os posts devem ser recarregados do servidor a cada 15 segundos e atualizados em tela
+
+    **Dica**: Pesquise sobre como utilizar setInterval em um componente React. Pesquise sobre como funciona o retorno da função passada pra useEffect e como você pode utilizá-la junto do clearInterval do JS
+
+# Bônus (opcional)
+
+- Persistência de login
+
+  - [x] Faça com que o usuário permaneça logado mesmo ao atualizar a página. Para isso, ao logar, armazene o token de autenticação no navegador e verifique se o mesmo existe ao entrar na aplicação, redirecionando o usuário para a timeline imediatamente caso já esteja logado
+
+    **Dica**: pesquise por **Local Storage** e utilize esse recurso para armazenar dados no navegador
+
+  - [x] Ao clicar em "Logout", além de redirecionar para a tela de login, apague o token persistido do Local Storage
+
+- Link do YouTube
+
+  - [x] Ao exibir um post, caso o link compartilhado seja um link do YouTube, substitua o snippet padrão pelo player embedded do YouTube
+
+    **Dica**: pesquise por uma lib chamada **get-youtube-id** e pesquise sobre como adicionar o player do YouTube no seu projeto
+
+- Desafio: Localização
+
+  - [x] Adicione um botão de "Localização ativada" / "Localização desativada" na caixa de publicação de posts, conforme layout
+  - [x] Por padrão, a localização deve vir desativada
+  - [x] Ao clicar para ativá-la, deve-se pedir permissão ao navegador para obter essa informação de geolocalização
+
+    **Dica**: pesquise como obter a geolocalização por JS
+
+  - [x] Caso não seja possível obter a localização, exiba um alerta para o usuário e volte o botão para o estado de desativado
+  - [x] Caso consiga pegar a localização, envie essa nova informação de latitude e longitude para o servidor ao publicar um post, seguindo documentação da API
+  - [x] Ao exibir posts na timeline, deve-se exibir um ícone de "pinpoint" ao lado do nome do autor do post, conforme layout
+  - [x] Ao clicar nesse ícone, deve-se abrir uma modal conforme layout, exibindo um mapa com a posição informada
+
+    **Dica**: pesquise sobre como integrar um mapa do Google Maps no seu projeto React
 
 # Layout
 

@@ -6,8 +6,16 @@ const UserContext = createContext();
 export default UserContext;
 
 export const UserContextProvider = (props) => {
-  const [token, setToken] = useState("");
-  const [user, setUser] = useState({});
+  const initialTokenState =
+    localStorage.getItem("tokenObject") &&
+    JSON.parse(localStorage.getItem("tokenObject")).token;
+  const initialUserState =
+    localStorage.getItem("tokenObject") &&
+    JSON.parse(localStorage.getItem("tokenObject")).user;
+
+  const [token, setToken] = useState(initialTokenState);
+  const [user, setUser] = useState(initialUserState);
+  const [userFollows, setUserFollows] = useState([]);
 
   const signUp = async (body) => {
     try {
@@ -15,7 +23,11 @@ export const UserContextProvider = (props) => {
         `https://mock-api.bootcamp.respondeai.com.br/api/v1/linkr/sign_up`,
         body
       );
+
       if (data.token) {
+        let tokenObject = { user: data.user, token: data.token };
+        localStorage.setItem("tokenObject", JSON.stringify(tokenObject));
+
         setToken(data.token);
         setUser(data.user);
         return data;
@@ -33,6 +45,9 @@ export const UserContextProvider = (props) => {
         body
       );
       if (data.token) {
+        let tokenObject = { user: data.user, token: data.token };
+        localStorage.setItem("tokenObject", JSON.stringify(tokenObject));
+
         setToken(data.token);
         setUser(data.user);
         return data;
@@ -43,8 +58,27 @@ export const UserContextProvider = (props) => {
     }
   };
 
+  const fetchUserFollows = async () => {
+    try {
+      const { data } = await axios.get(
+        `https://mock-api.bootcamp.respondeai.com.br/api/v1/linkr/users/follows`,
+        {
+          headers: {
+            "user-token": `${token}`,
+          },
+        }
+      );
+      if(data){
+        setUserFollows(data.users);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Houve uma falha ao pegar sua lista de follows, tente novamente mais tarde");
+    }
+  };
 
   const clearData = () => {
+    localStorage.removeItem("tokenObject");
     setUser({});
     setToken("");
   };
@@ -56,6 +90,8 @@ export const UserContextProvider = (props) => {
         signIn,
         signUp,
         user,
+        fetchUserFollows,
+        userFollows,
         clearData,
       }}
     >
